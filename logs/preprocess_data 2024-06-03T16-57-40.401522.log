@@ -1,0 +1,13 @@
+2024-06-03 16:57:41,773|INFO: Note: NumExpr detected 12 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 8.
+2024-06-03 16:57:41,773|INFO: NumExpr defaulting to 8 threads.
+2024-06-03 16:57:43,548|INFO: Preparing output directory (orig_dataset)
+2024-06-03 16:57:52,636|INFO: --- Starting copying process ---
+2024-06-03 16:57:53,795|INFO: --- C:\Users\yairr\Coding\Python\Pokemon_Generator\data\orig_dataset was set successfully ---
+2024-06-05 11:58:36,505|ERROR: No such comm target registered: jupyter.widget.control
+2024-06-05 11:58:36,508|WARNING: No such comm: 1b29dc67-de10-4af0-b6f0-4480f51ad6e3
+2024-06-06 12:40:17,258|ERROR: No such comm target registered: jupyter.widget.control
+2024-06-06 12:40:17,262|WARNING: No such comm: 4b189800-653c-47ba-b165-0f9042176e8b
+2024-06-09 19:08:36,168|ERROR: No such comm target registered: jupyter.widget.control
+2024-06-09 19:08:36,190|WARNING: No such comm: 70f4702e-928e-45dd-af92-5b0bfb4fd358
+2024-06-10 16:32:31,036|ERROR: No such comm target registered: jupyter.widget.control
+2024-06-10 16:32:31,042|WARNING: No such comm: 778ec716-2a72-4731-8ba2-66b23f029c29
