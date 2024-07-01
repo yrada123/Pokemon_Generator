@@ -1,6 +1,0 @@
-model_params:
-  latent_dim = 128
-
-data_param:
-  dir = 'data/orig_dataset'
-  batch_size = 64

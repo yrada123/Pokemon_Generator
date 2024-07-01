@@ -17,4 +17,4 @@ def load_yaml(file_path):
     with open(file_path, 'r') as file:
         return yaml.safe_load(file)
 
-AE_YAML = load_yaml(path.join(CONFIGS_DIR, 'AE.yaml'))
+VAE_YAML = load_yaml(path.join(CONFIGS_DIR, 'VAE.yaml'))

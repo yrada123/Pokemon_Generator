@@ -1,0 +1,8 @@
+# Ignoring data files
+data/*
+
+# Ignoring cache
+__pycache__
+
+Ignoring unwanted .py
+main.py

@@ -67,9 +67,11 @@ def copy_original_images_to_dir(output_dir=conf.ORIG_DATASET_DIR, debug=False):
     logger.info('--- ' +  output_dir + " was set successfully ---")
 
 def load_dataset() -> DataLoader:
-    ae_yaml = conf.AE_YAML
+    vae_yaml = conf.VAE_YAML
 
-    transform = transforms.Compose([transforms.ToTensor,
+    size = vae_yaml['data_params']["img_size"]
+    transform = transforms.Compose([transforms.Resize((size,size)),
+                                    transforms.ToTensor,
                                     transforms.Normalize((0.5, 0.5, 0.5),(0.5, 0.5, 0.5))])
-    dataset = datasets.ImageFolder(root=ae_yaml['data_params']['dir'], transform=transform)
-    return DataLoader(dataset=dataset, batch_size=ae_yaml['data_params']['batch_size'])
+    dataset = datasets.ImageFolder(root=vae_yaml['data_params']['dir'], transform=transform)
+    return DataLoader(dataset=dataset, batch_size=vae_yaml['data_params']['batch_size'])
