@@ -1,11 +1,12 @@
 model_params:
-  output_channels_dim_default = [32,64,128,256,512]
-  latent_dim = 128
+  output_channels_dim_default : [32,64,128,256,512]
+  latent_dim : 128
 
 data_params:
-  dir = 'data/orig_dataset'
-  img_size = 64
-  batch_size = 64
+  dir : 'data/orig_dataset'
+  img_size : 64
+  batch_size : 64
 
 training_params:
-  learning_rate = 0.01
+  learning_rate : 0.001
+  w_kld : 1.e-5

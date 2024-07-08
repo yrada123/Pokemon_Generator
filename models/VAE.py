@@ -1,7 +1,3 @@
-from typing import Any
-
-from pytorch_lightning.utilities.types import STEP_OUTPUT, OptimizerLRScheduler
-
 import scripts.config as conf
 import torch
 import torch.nn as nn
@@ -59,7 +55,7 @@ class Encoder(nn.Module):
         # conv layers -> expectation fc
         #                log var variance fc -> Gaussian sample latent
         conv_output = self.conv_layers(x)
-        conv_output = nn.Flatten(conv_output)
+        conv_output = torch.flatten(conv_output, start_dim=1)
         mu = self.fc_mu(conv_output)
         std = torch.exp(0.5 * self.fc_logvar(conv_output))
         eps = torch.randn_like(std)
@@ -165,9 +161,13 @@ class VAE(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         x = batch
         rec_x, _, mu, std = self(x)
+        std = torch.clamp(std, min=1e-8)
         mse_loss = F.mse_loss(x, rec_x)
-        kld_loss = torch.mean(-0.5 * torch.sum(mu**2 + std**2 -1 - 2*std.log(), dim=1), dim=0)
+        kld_loss = torch.mean(0.5 * torch.mean(mu**2 + std**2 - 1 - 2*std.log(), dim=1), dim=0)
         loss = mse_loss + self.w_kld * kld_loss
+        self.log('mse_loss', mse_loss)
+        self.log('kld_loss', kld_loss)
+        self.log('loss', loss)
         return loss
 
     def validation_step(self, batch, batch_idx):

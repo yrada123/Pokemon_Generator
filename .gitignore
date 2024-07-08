@@ -3,6 +3,14 @@ data/*
 
 # Ignoring cache
 __pycache__
+.*
+*/.*
+!.gitignore
 
-Ignoring unwanted .py
+#Ignoring unwanted .py
 main.py
+
+#ignoring porject logs and results
+outputs
+logs
+tb_logs
