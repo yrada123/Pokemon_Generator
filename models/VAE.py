@@ -10,7 +10,7 @@ from torchvision.utils import make_grid
 
 
 class Encoder(nn.Module):
-    def __init__(self, img_size, latent_dim, conv_channels):
+    def __init__(self, img_size, latent_dim, conv_channels, dropout=0.1):
         """Setting encoder layers for VAE
 
             Args:
@@ -26,12 +26,14 @@ class Encoder(nn.Module):
         # Set conv layers
         for ch, rep in conv_channels:
             for i in range(rep):
-                stride = (1, 1) if i < rep-1 else (2, 2)  # last layer halves spatial dim
+                is_last = i == rep-1
+                stride = (1, 1) if not is_last else (2, 2)  # last layer halves spatial dim
                 encoder_conv_layers.append(nn.Sequential(
                     nn.Conv2d(in_channels=in_channels, out_channels=ch,
                               kernel_size=(3, 3), stride=stride, padding=1),
                     nn.BatchNorm2d(ch),
-                    nn.LeakyReLU()
+                    nn.LeakyReLU(),
+                    nn.Dropout(p=dropout) if is_last else nn.Identity()
                 ))
                 in_channels = ch
         self.conv_layers = nn.Sequential(*encoder_conv_layers)
@@ -69,7 +71,7 @@ class Encoder(nn.Module):
 
 
 class Decoder(nn.Module):
-    def __init__(self, img_size, latent_dim, conv_channels):
+    def __init__(self, img_size, latent_dim, conv_channels, dropout=0.1):
         """Setting decoder layers for VAE
 
             Args:
@@ -91,7 +93,8 @@ class Decoder(nn.Module):
 
         for ch, rep in conv_channels:
             for i in range(rep):
-                if i < rep-1:
+                is_last = i == rep - 1
+                if not is_last:
                     conv = nn.Conv2d(in_channels=in_channels, out_channels=ch,
                                      kernel_size=(3, 3), stride=(1, 1), padding=1)
                 else:
@@ -100,7 +103,8 @@ class Decoder(nn.Module):
                 decoder_conv_layers.append(nn.Sequential(
                     conv,
                     nn.BatchNorm2d(ch),
-                    nn.LeakyReLU()
+                    nn.LeakyReLU(),
+                    nn.Dropout(p=dropout) if is_last else nn.Identity()
                 ))
                 in_channels = ch
 
@@ -140,9 +144,10 @@ class VAE(pl.LightningModule):
         self.img_size = conf['data_params']['img_size']
         self.w_kld = conf['training_params']['w_kld']
         self.lr = conf['training_params']['learning_rate']
+        self.dropout = conf["model_params"]["dropout"]
 
-        self.encoder = Encoder(self.img_size, self.latent_dim, self.conv_channels)
-        self.decoder = Decoder(self.img_size, self.latent_dim, self.conv_channels)
+        self.encoder = Encoder(self.img_size, self.latent_dim, self.conv_channels, self.dropout)
+        self.decoder = Decoder(self.img_size, self.latent_dim, self.conv_channels, self.dropout)
 
     # Interface
 
@@ -170,19 +175,26 @@ class VAE(pl.LightningModule):
     # Train
 
     def training_step(self, batch, batch_idx):
-        loss, mse_loss, kld_loss, _, mu, logvar = self.loss_calc(batch)
-        self.logger.experiment.add_histogram('mu', mu, self.current_epoch)
-        self.logger.experiment.add_histogram('std', logvar.exp(), self.current_epoch)
+        loss, mse_loss, kld_loss, rec_x, mu, logvar = self.loss_calc(batch)
+        concatenated_images = torch.cat((batch[:4], rec_x[:4]), dim=3)
+        grid = make_grid(concatenated_images)
+        self.logger.experiment.add_image('train_images', grid, self.global_step)
+        if self.current_epoch > 10:
+            self.logger.experiment.add_histogram('train_mu', mu, self.current_epoch)
+            self.logger.experiment.add_histogram('train_std', (logvar / 2).exp(), self.current_epoch)
         self.log('train_mse_loss', mse_loss)
         self.log('train_kld_loss', kld_loss)
         self.log('train_loss', loss)
         return loss
 
     def validation_step(self, batch, batch_idx):
-        loss, mse_loss, kld_loss, rec_x, _, _ = self.loss_calc(batch)
+        loss, mse_loss, kld_loss, rec_x, mu, logvar = self.loss_calc(batch)
         concatenated_images = torch.cat((batch[:4], rec_x[:4]), dim=3)
         grid = make_grid(concatenated_images)
         self.logger.experiment.add_image('val_images', grid, self.global_step)
+        if self.current_epoch > 10:
+            self.logger.experiment.add_histogram('val_mu', mu, self.current_epoch)
+            self.logger.experiment.add_histogram('val_std', (logvar / 2).exp(), self.current_epoch)
         self.log('val_mse_loss', mse_loss)
         self.log('val_kld_loss', kld_loss)
         self.log('val_loss', loss)

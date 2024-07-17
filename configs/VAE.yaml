@@ -1,23 +1,25 @@
 model_params:     # (channel, repeats)
-  conv_channels : [[32, 2],
-                   [64, 2],
-                   [128, 2],
-                   [256, 2],
-                   [512, 2]]
+  conv_channels : [[32, 1],
+                   [64, 1],
+                   [128, 1],
+                   [256, 1],
+                   [512, 1]]
   latent_dim : 128
+  dropout : 0
 
 data_params:
-  data_dir : 'data/dataset'
+  train_data_dir : 'data/train_dataset'
+  val_data_dir: 'data/val_dataset'
   img_size : 64
   batch_size : 64
 
 training_params:
   learning_rate : 0.001
-  w_kld : 1.e-4
+  w_kld : 1.e-2
 
 trainer_params:
-  max_epochs: 10000
-  ckpt: ~
+  max_epochs: 15000
+  ckpt: ~ #'outputs/last.ckpt'
   check_val_every_n_epoch: 3
 
 logging_params:

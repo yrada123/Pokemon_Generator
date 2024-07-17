@@ -5,6 +5,8 @@ data/*
 __pycache__
 .*
 */.*
+.idea/*
+.ipynb_checkpoints/*
 !.gitignore
 
 #Ignoring unwanted .py
